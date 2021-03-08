@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #333;
+            font-family: montserrat;
+            font-weight: 700;
+            min-width: 285px;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+            width: 0px;
+        }
+
+        .container {
+            width: 100%;
+            min-width: 285px;
+            height: max-content;
+            background-color: #333;
+            font-weight: 800; 
+        }
+
+        .label {
+            width: 100%;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-transform: uppercase;
+            color: #000;
+            background-color: #fefefe;
+            text-align: center;
+            font-size: 20px;
+            pointer-events: none;
+        }
+
+        .label p {
+            letter-spacing: 1px;
+        }
+
+        button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            pointer-events: auto;
+            border: 0px solid rgba(0, 0, 0, 0);
+            padding: 0;
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
+
+        i {
+            font-size: 20px;
+        }
+
+        .settings-logo {
+            pointer-events: auto;
+        }
+
+        .feed {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            flex-direction: column-reverse;
+            padding-top: 5px;
+        }
+
+        .item {
+            width: 100%;
+            min-height: 3%;
+            height: max-content;
+            background-color: #000;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-right: 5px solid red;
+            padding: 5px;
+        }
+
+        .tip-info {
+            padding-left: 5px;
+            display: flex;
+        }
+
+        .name {
+            color: #fefefe;
+            padding-right: 20px !important;
+        }
+
+        .amount {
+            color: #07d600;
+        }
+
+        .time {
+            padding-left: 15px;
+            padding-right: 2px;
+            color: rgb(206, 206, 206);
+            text-align: right;
+        }
+
+        .settings {
+            position: absolute;
+            left: 0;
+            top: 30px;
+            width: 100%;
+            height: max-content;
+            background-color: #333;
+            z-index: 999;
+            color: #fafafa;
+            padding: 10px;
+            opacity: 0;
+            display: none;
+        }
+
+        .settings h3 {
+            color: rgb(255, 30, 30);
+            padding-bottom: 8px;
+        }
+
+        .settings-flex {
+            width: 100%;
+            height: 100vh;
+            background-color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            flex-direction: column !important;
+        }
+
+        .settings-item {
+            width: 100%;
+            margin-bottom: 5px;
+            background-color: #fafafa;
+            color: #333;
+            padding: 5px;
+            display: flex;
+            font-size: 15px;
+            border-bottom: 5px solid red;
+            box-sizing: border-box;
+        }
+
+        #coinName {
+            height: 55px;
+            top: 100px;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #coinName input {
+            height: max-content !important;
+            margin-left: 5px;
+            margin-right: 5px;
+            margin-top: -18px;
+            width: 100%;
+            font-family: montserrat;
+            font-weight: 700;
+            padding-left: 5px;
+            padding-right: 5px;
+            text-align: center;
+        }
+
+        #reset {
+            color: #333;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #reset button{
+            position: relative;
+            width: 50%;
+            height: 30px;
+            margin-top: -10px;
+            color: #fefefe;
+            background-color: red;
+            border-radius: 20px;
+            font-family: montserrat;
+            font-weight: 700;
+            font-size: 15px;
+            margin-left: 8%;
+        }
+        #submit{
+            height: 50px;
+            display:flex !important;
+            align-items: center;
+            justify-content: center;
+        }
+        #submit button{
+            font-family: montserrat;
+            font-weight: 700;
+            font-size: 15px;
+            margin-left: 8%;
+            position: relative;
+            width: 40%;
+            height: 30px;
+            color: #fafafa;
+            background-color: red;
+            border-radius: 20px;
+            margin-top: -10px;
+        }
+    </style>
+    <script>
+        let donationList = [];
+        let coinName = '';
+        // Initialise WebSocket Connection to Server
+        const socket = new WebSocket(
+            "wss://rally-alerts-server.herokuapp.com/rally/alerts/websocket"
+        );
+
+        // Reconnect on Close
+        socket.addEventListener("close", () => {
+            console.log("Reconnecting to Server");
+            setInterval(function () {
+
+            });
+        });
+
+        socket.addEventListener("open", (event) => {
+            setInterval(function () {
+                socket.send("Hello Server!");
+            }, 20000);
+        });
+
+        // Listen to Data
+        socket.addEventListener("message", (event) => {
+            socket.send("Received!");
+            if (event.data.slice(0, 1) !== "{") {
+                console.log("SERVER: ", event.data);
+            } else {
+                if (JSON.parse(event.data).coinKind == coinName) {
+                    console.log("Donation Receieved");
+                    let data = JSON.parse(event.data);
+                    if (data.data.costInUSCents >= 1) {
+                        addDonation(
+                            data.data.fromUsername,
+                            Math.trunc(data.data.costInUSCents),
+                            true,
+                            0,
+                            0
+                        );  
+                    } else {
+                        addDonation(
+                            data.data.fromUsername,
+                            String(data.data.costInUSCents).slice(0, 4),
+                            true,
+                            0,
+                            0
+                        );
+                    }
+                }
+            }
+        });
+
+        window.addEventListener("load", () => {
+            coinName = localStorage.coin;
+            listeners()
+        });
+
+        function addDonation(name, amount, state, d, t) {
+            function addZero(i) {
+                if (i < 10) {
+                    i = "0" + i;
+                }
+                return i;
+            }
+            date = new Date();
+            if (state == true) {
+                $(".feed").append(
+                    `
+        <div class="item">
+                <div class="tip-info">
+                    <div class="name">${name}
+                        <span class="amount">$${amount}</span> 
+                    </div>
+                </div>
+                <div class="time">
+                ${date.toDateString().slice(4)}   
+                <br> 
+                ${addZero(date.getHours())} : ${addZero(date.getMinutes())}
+                </div>
+        </div>    
+        `
+                );
+
+                donationList.push(
+                    `${name};${amount};${date.toDateString().slice(4)};${addZero(
+                        date.getHours()
+                    )} : ${addZero(date.getMinutes())}`
+                );
+                localStorage.setItem("data", donationList);
+                console.log(localStorage.data.split(","));
+            } else {
+                $(".feed").append(
+                    `
+            <div class="item">
+                    <div class="tip-info">
+                        <div class="name">${name}
+                            <span class="amount">$${amount}</span> 
+                        </div>
+                    </div>
+                    <div class="time">
+                    ${d}   
+                    <br> 
+                    ${t}
+                    </div>
+            </div>    
+            `
+                );
+            }
+        }
+        function listeners() {
+            /*if(localStorage.image){
+                document.querySelector('#image').value = localStorage.image;
+            }*/
+            if(localStorage.color1){
+                document.querySelector('#color1').value = localStorage.color1;
+            }
+            if(localStorage.color2){
+                document.querySelector('#color2').value = localStorage.color2;
+            }
+            /*if(localStorage.padding){
+                document.querySelector('#padding').value = localStorage.padding;
+            }*/
+            if(localStorage.coin){
+                document.querySelector('#coinName input').value = localStorage.coin;
+            }
+
+            document.querySelector('.settings-logo button').addEventListener("click", () => {
+                if (document.querySelector('.settings').style.opacity != 1) {
+                    document.querySelector('.settings').style.opacity = 1;
+                    document.querySelector('.settings').style.display = 'block';
+                }
+                else {
+                    document.querySelector('.settings').style.opacity = 0;
+                    document.querySelector('.settings').style.display = 'none';
+                }
+            })
+
+            document.querySelector('#reset-button').addEventListener("click", () => {
+                localStorage.clear();
+                document.querySelector('.feed').innerHTML = "";
+            })
+
+            document.querySelector('#coinName input').addEventListener('change', (event) => {
+                coinName = event.target.value;
+                localStorage.setItem("coin", coinName);
+            });
+
+            /*document.querySelector('#image').addEventListener('change', (event) => {
+                localStorage.setItem("image", event.target.value)
+                console.log(localStorage)
+            });*/
+
+            document.querySelector('#color1').addEventListener('change', (event) => {
+                localStorage.setItem("color1", event.target.value)
+                console.log(localStorage)
+            });
+
+            document.querySelector('#color2').addEventListener('input', (event) => {
+                localStorage.setItem("color2", event.target.value)
+                console.log(localStorage)
+            });
+
+            /*document.querySelector('#padding').addEventListener('input', (event) => {
+                localStorage.setItem("padding", event.target.value)
+                console.log(localStorage)
+            });*/
+        }
+
+        setInterval(function () {
+            location.reload();
+        }, 1000 * 60 * 15);
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="label">
+            <p>ACTIVITY FEED</p>
+            <div class="settings-logo">
+                <button onclick="">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </div>
+        <div class="feed">
+            <!-- <div class="item">
+          <div class="tip-info">
+            <div class="name">
+              Keshav <br />
+              <span class="amount">$50</span>
+            </div>
+          </div>
+          <div class="time">Mar 7 2021<br />10:42</div> -->
+        </div>
+    </div>
+    </div>
+    <div class="settings">
+        <h3>Settings &#8594;</h3>
+        <div class="settings-flex">
+            <div class="settings-item" id="coinName">
+                <p>COIN SYMBOL <span>&#8594;</span></p><br><input value="SKOT">
+            </div>
+            <div class="settings-item" id="reset">
+                <button id="reset-button">RESET</button>
+            </div>
+            <h3 class="settings-item"
+                style="border: 0px solid; background-color: rgba(0,0,0,0); font-size: 20px; margin-top:10px">Alert
+                Settings <span style="padding-left: 5px"> &#8594;</span></h3>
+            <!--<div class="settings-item">Image <span style="padding-left: 5px"> &#8594;</span> <input id="image"
+                    style="padding-left: 5px; margin-left: 5px;" type="text" ></div>-->
+            <div class="settings-item">Username Color<span style="padding-left: 5px"> &#8594;</span> <input id="color1"
+                    style="padding: 0 5px 0 5px; margin-left: 5px; height: 20px; width: 20%;margin-right: 5px; line-height: 10px;"
+                    type="text" value="#FFA500"></div>
+            <div class="settings-item">Message Color <span style="padding-left: 5px"> &#8594;</span> <input id="color2"
+                    style="padding: 0 5px 0 5px; margin-left: 5px; height: 20px; width: 20%;margin-right: 5px; line-height: 10px;"
+                    type="text" value="#ffffff">
+                </div>
+                <div class="settings-item" id='submit'>
+                    <button>SUBMIT</button>
+                </div>
+            <!--<div class="settings-item">Text Top Padding <span style="padding-left: 5px"> &#8594;</span> <input
+                    id="padding"
+                    style="padding: 0 5px 0 5px; margin-left: 5px; height: 20px; width: 20%;margin-right: 5px; line-height: 10px;"
+                    type="text" value="-20"></div>-->
+        </div>
+
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.min.js"
+        integrity="sha512-B4skI5FiLurS86aioJx9VfozI1wjqrn6aTdJH+YQUmCZum/ZibPBTX55k5d9XM6EsKePDInkLVrN7vPmJxc1qA=="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" />
+</body>
+
+</html>
