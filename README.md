@@ -1,5 +1,5 @@
 # Rally Donation Alerts & Activity Feed 
-    Donation alerts for streamers who wish to show their viewer's support on stream and an Activity Feed to keep track of donations made through Rally
+``Donation alerts for streamers who wish to show their viewer's support on stream and an Activity Feed to keep track of donations made through Rally``
 # Installation and Getting Started
 
 ## Donation Alerts
