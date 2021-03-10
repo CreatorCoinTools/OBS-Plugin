@@ -3,6 +3,8 @@
 
 <head>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&display=swap');
+
         * {
             margin: 0;
             padding: 0;
@@ -26,7 +28,7 @@
             min-width: 285px;
             height: max-content;
             background-color: #333;
-            font-weight: 800; 
+            font-weight: 800;
         }
 
         .label {
@@ -79,7 +81,7 @@
 
         .item {
             width: 100%;
-            min-height: 3%;
+            min-height: 50px;
             height: max-content;
             background-color: #000;
             margin-bottom: 5px;
@@ -97,7 +99,7 @@
 
         .name {
             color: #fefefe;
-            padding-right: 20px !important;
+            padding-right: 0px !important;
         }
 
         .amount {
@@ -105,10 +107,10 @@
         }
 
         .time {
-            padding-left: 15px;
             padding-right: 2px;
             color: rgb(206, 206, 206);
             text-align: right;
+            width: max-content;
         }
 
         .settings {
@@ -181,7 +183,7 @@
             justify-content: center;
         }
 
-        #reset button{
+        #reset button {
             position: relative;
             width: 50%;
             height: 30px;
@@ -194,13 +196,15 @@
             font-size: 15px;
             margin-left: 8%;
         }
-        #submit{
+
+        #submit {
             height: 50px;
-            display:flex !important;
+            display: flex !important;
             align-items: center;
             justify-content: center;
         }
-        #submit button{
+
+        #submit button {
             font-family: montserrat;
             font-weight: 700;
             font-size: 15px;
@@ -213,6 +217,7 @@
             border-radius: 20px;
             margin-top: -10px;
         }
+
     </style>
     <script>
         let donationList = [];
@@ -245,6 +250,7 @@
                 if (JSON.parse(event.data).coinKind == coinName) {
                     console.log("Donation Receieved");
                     let data = JSON.parse(event.data);
+                    data.data.costInUSCents = data.data.costInUSCents/100
                     if (data.data.costInUSCents >= 1) {
                         addDonation(
                             data.data.fromUsername,
@@ -252,7 +258,7 @@
                             true,
                             0,
                             0
-                        );  
+                        );
                     } else {
                         addDonation(
                             data.data.fromUsername,
@@ -267,8 +273,16 @@
         });
 
         window.addEventListener("load", () => {
-            coinName = localStorage.coin;
-            listeners()
+            coinName = document.querySelector('#coinName input').value;
+            console.log(coinName);
+            if (localStorage.length > 0) {
+                donationList = localStorage.data.split(",");
+                for (item in donationList) {
+                    let data = donationList[item].split(";");
+                    addDonation(data[0], data[1], false, data[2], data[3]);
+                }
+            }
+            listeners();
         });
 
         function addDonation(name, amount, state, d, t) {
@@ -284,7 +298,7 @@
                     `
         <div class="item">
                 <div class="tip-info">
-                    <div class="name">${name}
+                    <div class="name">${name} <br>
                         <span class="amount">$${amount}</span> 
                     </div>
                 </div>
@@ -327,16 +341,16 @@
             /*if(localStorage.image){
                 document.querySelector('#image').value = localStorage.image;
             }*/
-            if(localStorage.color1){
+            if (localStorage.color1) {
                 document.querySelector('#color1').value = localStorage.color1;
             }
-            if(localStorage.color2){
+            if (localStorage.color2) {
                 document.querySelector('#color2').value = localStorage.color2;
             }
             /*if(localStorage.padding){
                 document.querySelector('#padding').value = localStorage.padding;
             }*/
-            if(localStorage.coin){
+            if (localStorage.coin) {
                 document.querySelector('#coinName input').value = localStorage.coin;
             }
 
@@ -399,14 +413,6 @@
             </div>
         </div>
         <div class="feed">
-            <!-- <div class="item">
-          <div class="tip-info">
-            <div class="name">
-              Keshav <br />
-              <span class="amount">$50</span>
-            </div>
-          </div>
-          <div class="time">Mar 7 2021<br />10:42</div> -->
         </div>
     </div>
     </div>
@@ -430,10 +436,10 @@
             <div class="settings-item">Message Color <span style="padding-left: 5px"> &#8594;</span> <input id="color2"
                     style="padding: 0 5px 0 5px; margin-left: 5px; height: 20px; width: 20%;margin-right: 5px; line-height: 10px;"
                     type="text" value="#ffffff">
-                </div>
-                <div class="settings-item" id='submit'>
-                    <button>SUBMIT</button>
-                </div>
+            </div>
+            <div class="settings-item" id='submit'>
+                <button>SUBMIT</button>
+            </div>
             <!--<div class="settings-item">Text Top Padding <span style="padding-left: 5px"> &#8594;</span> <input
                     id="padding"
                     style="padding: 0 5px 0 5px; margin-left: 5px; height: 20px; width: 20%;margin-right: 5px; line-height: 10px;"

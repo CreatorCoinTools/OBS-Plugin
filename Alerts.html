@@ -121,8 +121,13 @@
         });
 
         window.addEventListener("load", () => {
+            console.log(localStorage)
+            localStorage.setItem("coin", "SKOT");
+            localStorage.setItem("color2", "#FFA500")
+            localStorage.setItem("color2", "#fafafa")
             if(localStorage.coin){
                 coinName = localStorage.coin;
+                document.querySelector('.coin').innerHTML = coinName;
             }
             /*opacityif(localStorage.image){
                 document.getElementById('img').style.backgroundImage = 'url(' + localStorage.image + ')';
@@ -175,7 +180,7 @@
         <div class="text-container">
             <div class="username" id="username">OverAchiever</div>
             <br>
-            <div class="message" id="message">Donated <span class="amount" id="amount">$50</span></div>
+            <div class="message" id="message"><span class="amount" id="amount">$50</span> <span class="coin"></span></div>
         </div>
     </div>
     </div>
