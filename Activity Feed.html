@@ -2,7 +2,64 @@
 <html lang="en">
 
 <head>
-    <style>
+
+    <script>
+        let donationList = [];
+        let coinName = '';
+        // Initialise WebSocket Connection to Server
+        const socket = new WebSocket(
+            "wss://rally-alerts-server.herokuapp.com/rally/alerts/websocket"
+        );
+
+        // Reconnect on Close
+        socket.addEventListener("close", () => {
+            console.log("Reconnecting to Server");
+            setInterval(function () {
+
+            });
+        });
+
+        socket.addEventListener("open", (event) => {
+            setInterval(function () {
+                socket.send("Hello Server!");
+            }, 20000);
+        });
+
+        // Listen to Data
+        socket.addEventListener("message", (event) => {
+            socket.send("Received!");
+            if (event.data.slice(0, 1) !== "{") {
+                console.log("SERVER: ", event.data);
+            } else {
+                if (JSON.parse(event.data).coinKind == coinName) {
+                    console.log("Donation Receieved");
+                    let data = JSON.parse(event.data);
+                    data.data.costInUSCents = data.data.costInUSCents / 100
+                    if (data.data.costInUSCents >= 1) {
+                        addDonation(
+                            data.data.fromUsername,
+                            Math.trunc(data.data.costInUSCents),
+                            true,
+                            0,
+                            0
+                        );
+                    } else {
+                        addDonation(
+                            data.data.fromUsername,
+                            String(data.data.costInUSCents).slice(0, 4),
+                            true,
+                            0,
+                            0
+                        );
+                    }
+                }
+            }
+        });
+
+        window.addEventListener("load", () => {
+            $('head').append(
+                `
+                <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&display=swap');
 
         * {
@@ -13,7 +70,7 @@
 
         body {
             background-color: #333;
-            font-family: montserrat;
+            font-family: 'Montserrat', sans-serif;
             font-weight: 700;
             min-width: 285px;
         }
@@ -83,11 +140,9 @@
             width: 100%;
             min-height: 50px;
             height: max-content;
+            position: relative;
             background-color: #000;
             margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
             border-right: 5px solid red;
             padding: 5px;
         }
@@ -99,7 +154,9 @@
 
         .name {
             color: #fefefe;
-            padding-right: 0px !important;
+            width: 60%;
+            word-wrap: break-word;
+            padding-right: 20px !important;
         }
 
         .amount {
@@ -111,6 +168,9 @@
             color: rgb(206, 206, 206);
             text-align: right;
             width: max-content;
+            position: absolute;
+            top: 5px;
+            right: 5px;
         }
 
         .settings {
@@ -168,7 +228,7 @@
             margin-right: 5px;
             margin-top: -18px;
             width: 100%;
-            font-family: montserrat;
+            font-family: 'Montserrat', sans-serif;
             font-weight: 700;
             padding-left: 5px;
             padding-right: 5px;
@@ -191,7 +251,7 @@
             color: #fefefe;
             background-color: red;
             border-radius: 20px;
-            font-family: montserrat;
+            font-family: 'Montserrat', sans-serif;
             font-weight: 700;
             font-size: 15px;
             margin-left: 8%;
@@ -205,7 +265,7 @@
         }
 
         #submit button {
-            font-family: montserrat;
+            font-family: 'Montserrat', sans-serif;
             font-weight: 700;
             font-size: 15px;
             margin-left: 8%;
@@ -219,60 +279,8 @@
         }
 
     </style>
-    <script>
-        let donationList = [];
-        let coinName = '';
-        // Initialise WebSocket Connection to Server
-        const socket = new WebSocket(
-            "wss://rally-alerts-server.herokuapp.com/rally/alerts/websocket"
-        );
-
-        // Reconnect on Close
-        socket.addEventListener("close", () => {
-            console.log("Reconnecting to Server");
-            setInterval(function () {
-
-            });
-        });
-
-        socket.addEventListener("open", (event) => {
-            setInterval(function () {
-                socket.send("Hello Server!");
-            }, 20000);
-        });
-
-        // Listen to Data
-        socket.addEventListener("message", (event) => {
-            socket.send("Received!");
-            if (event.data.slice(0, 1) !== "{") {
-                console.log("SERVER: ", event.data);
-            } else {
-                if (JSON.parse(event.data).coinKind == coinName) {
-                    console.log("Donation Receieved");
-                    let data = JSON.parse(event.data);
-                    data.data.costInUSCents = data.data.costInUSCents/100
-                    if (data.data.costInUSCents >= 1) {
-                        addDonation(
-                            data.data.fromUsername,
-                            Math.trunc(data.data.costInUSCents),
-                            true,
-                            0,
-                            0
-                        );
-                    } else {
-                        addDonation(
-                            data.data.fromUsername,
-                            String(data.data.costInUSCents).slice(0, 4),
-                            true,
-                            0,
-                            0
-                        );
-                    }
-                }
-            }
-        });
-
-        window.addEventListener("load", () => {
+                `
+            )
             coinName = document.querySelector('#coinName input').value;
             console.log(coinName);
             if (localStorage.length > 0) {
