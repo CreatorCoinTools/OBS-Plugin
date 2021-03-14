@@ -1,5 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE
+    html>
+<html
+    lang="en">
 
 <head>
     <style>
@@ -71,8 +73,10 @@
         }
 
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.min.js"
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.min.js"
         integrity="sha512-B4skI5FiLurS86aioJx9VfozI1wjqrn6aTdJH+YQUmCZum/ZibPBTX55k5d9XM6EsKePDInkLVrN7vPmJxc1qA=="
         crossorigin="anonymous"></script>
     <script>
@@ -99,12 +103,24 @@
             }, 5000);
         };
 
-        socket.addEventListener("open", (event) => {
+        socket.onopen = function (event) {
+            
+        };
+        function isOpen(ws) {
+                return ws.readyState === ws.OPEN;
+            }
             setInterval(function () {
-                socket.send("Hello Server!");
-            }, 20000);
-        });
-
+                if (!isOpen(socket)) {
+                    console.log("Reconnecting")
+                    location.reload();
+                    new WebSocket(
+                        "wss://rally-alerts-server.herokuapp.com/rally/alerts/websocket"
+                    );
+                }
+                else {
+                    socket.send("Keep Alive");
+                }
+            }, 5000);
         // Listen to Data
         socket.addEventListener("message", (event) => {
             socket.send("Received!");
@@ -125,17 +141,17 @@
             localStorage.setItem("coin", "SKOT");
             localStorage.setItem("color2", "#FFA500")
             localStorage.setItem("color2", "#fafafa")
-            if(localStorage.coin){
+            if (localStorage.coin) {
                 coinName = localStorage.coin;
                 document.querySelector('.coin').innerHTML = coinName;
             }
             /*opacityif(localStorage.image){
                 document.getElementById('img').style.backgroundImage = 'url(' + localStorage.image + ')';
             }*/
-            if(localStorage.color1){
+            if (localStorage.color1) {
                 document.querySelector('.username').style.color = localStorage.color1;
             }
-            if(localStorage.color2){
+            if (localStorage.color2) {
                 document.querySelector('.message').style.color = localStorage.color2;
             }
             /*if(localStorage.padding){
@@ -165,22 +181,35 @@
             }, 3000);
         }
 
-        setInterval(function () {
-            location.reload();
-        }, 1000 * 60 * 15);
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
 </head>
 
 <body>
-    <div class="alert-container">
-        <div class="video-container">
-            <div class='img' id="img"></div>
+    <div
+        class="alert-container">
+        <div
+            class="video-container">
+            <div class='img'
+                id="img">
+            </div>
         </div>
-        <div class="text-container">
-            <div class="username" id="username">OverAchiever</div>
+        <div
+            class="text-container">
+            <div class="username"
+                id="username">
+                OverAchiever
+            </div>
             <br>
-            <div class="message" id="message"><span class="amount" id="amount">$50</span> <span class="coin"></span></div>
+            <div class="message"
+                id="message">
+                <span
+                    class="amount"
+                    id="amount">$50</span>
+                <span
+                    class="coin"></span>
+            </div>
         </div>
     </div>
     </div>
