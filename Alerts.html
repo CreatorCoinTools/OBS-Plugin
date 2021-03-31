@@ -137,35 +137,33 @@
         });
 
         window.addEventListener("load", () => {
-            console.log(localStorage)
-            localStorage.setItem("coin", "SKOT");
-            localStorage.setItem("color2", "#FFA500")
-            localStorage.setItem("color2", "#fafafa")
+
             if (localStorage.coin) {
                 coinName = localStorage.coin;
                 document.querySelector('.coin').innerHTML = coinName;
             }
-            /*opacityif(localStorage.image){
-                document.getElementById('img').style.backgroundImage = 'url(' + localStorage.image + ')';
-            }*/
             if (localStorage.color1) {
                 document.querySelector('.username').style.color = localStorage.color1;
             }
             if (localStorage.color2) {
                 document.querySelector('.message').style.color = localStorage.color2;
             }
-            /*if(localStorage.padding){
-                document.querySelector('.video-container').style.paddingTop = String(localStorage.padding) + 'px';
-            }*/
+            if(false){
+                console.log('Hi')
+            }
         });
 
         //Alerts
         function Alert(event) {
             console.log("ALERTS: Playing Alert");
-
+            console.log(String(JSON.parse(event.data).data.amountOfCoin))
             document.querySelector(".username").innerHTML = JSON.parse(event.data).data.fromUsername;
+            if(String(JSON.parse(event.data).data.amountOfCoin.toFixed(2)).slice(-3) == '.00'){
+                document.querySelector(".amount").innerHTML = String(JSON.parse(event.data).data.amountOfCoin).slice(0,-3)
+            }
+            else{
             document.querySelector(".amount").innerHTML = JSON.parse(event.data).data.amountOfCoin.toFixed(2);
-
+            }
             gsap
                 .timeline()
                 .fromTo(".img", { opacity: 0 }, { opacity: 1 })
