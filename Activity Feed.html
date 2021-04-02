@@ -87,11 +87,10 @@
         .item {
             width: 100%;
             min-height: 50px;
-            /*height: max-content;*/
             position: relative;
             background-color: #000;
             margin-bottom: 5px;
-            border-right: 5px solid red;
+            border-right: 5px solid #fff;
             padding: 5px;
             display: inline-block
         }
@@ -160,6 +159,7 @@
             display: flex;
             font-size: 15px;
             box-sizing: border-box;
+            border-bottom: 5px solid rgb(0, 0, 0);
         }
 
         #coinName {
@@ -233,185 +233,7 @@
         }
 
     </style>
-    <script>
-        let donationList = [];
-        let coinName = '';
-        // Initialise WebSocket Connection to Server
-        const socket = new WebSocket(
-            "wss://rally-alerts-server.herokuapp.com/rally/alerts/websocket"
-        );
-
-        socket.onopen = function (event) {
-
-        };
-
-        function isOpen(ws) {
-            return ws.readyState === ws.OPEN;
-        }
-        setInterval(function () {
-            if (!isOpen(socket)) {
-                console.log("Reconnecting")
-                location.reload();
-                new WebSocket(
-                    "wss://rally-alerts-server.herokuapp.com/rally/alerts/websocket"
-                );
-            }
-            else {
-                socket.send("Keep Alive");
-            }
-        }, 5000);
-
-        // Listen to Data
-        socket.addEventListener("message", (event) => {
-            socket.send("Received!");
-            if (event.data.slice(0, 1) !== "{") {
-                console.log("SERVER: ", event.data);
-            } else {
-                if (JSON.parse(event.data).coinKind == coinName) {
-                    console.log("Donation Receieved");
-                    let data = JSON.parse(event.data);
-                    data.data.costInUSCents = data.data.costInUSCents / 100
-                    if (data.data.costInUSCents >= 1) {
-                        addDonation(
-                            data.data.fromUsername,
-                            Math.trunc(data.data.costInUSCents),
-                            true,
-                            0,
-                            0
-                        );
-                    } else {
-                        addDonation(
-                            data.data.fromUsername,
-                            String(data.data.costInUSCents).slice(0, 4),
-                            true,
-                            0,
-                            0
-                        );
-                    }
-                }
-            }
-        });
-
-        window.addEventListener("load", () => {
-            listeners();
-
-            coinName = document.querySelector('#coinName input').value;
-            console.log(coinName);
-            if (localStorage.length > 0) {
-                donationList = localStorage.data.split(",");
-                for (item in donationList) {
-                    let data = donationList[item].split(";");
-                    addDonation(data[0], data[1], false, data[2], data[3]);
-                }
-            }
-        });
-
-        function addDonation(name, amount, state, d, t) {
-            function addZero(i) {
-                if (i < 10) {
-                    i = "0" + i;
-                }
-                return i;
-            }
-            date = new Date();
-            if (state == true) {
-                $(".feed").append(
-                    `
-        <div class="item">
-                <div class="tip-info">
-                    <div class="name">${name} <br>
-                        <span class="amount">$${amount}</span> 
-                    </div>
-                </div>
-                <div class="time">
-                ${date.toDateString().slice(4)}   
-                <br> 
-                ${addZero(date.getHours())} : ${addZero(date.getMinutes())}
-                </div>
-        </div>    
-        `
-                );
-
-                donationList.push(
-                    `${name};${amount};${date.toDateString().slice(4)};${addZero(
-                        date.getHours()
-                    )} : ${addZero(date.getMinutes())}`
-                );
-                localStorage.setItem("data", donationList);
-                console.log(localStorage.data.split(","));
-            } else {
-                $(".feed").append(
-                    `
-            <div class="item">
-                    <div class="tip-info">
-                        <div class="name">${name}
-                            <span class="amount">$${amount}</span> 
-                        </div>
-                    </div>
-                    <div class="time">
-                    ${d}   
-                    <br> 
-                    ${t}
-                    </div>
-            </div>    
-            `
-                );
-            }
-        }
-        function listeners() {
-            if (localStorage.color1) {
-                document.querySelector('#color1').value = localStorage.color1;
-            }
-            if (localStorage.color2) {
-                document.querySelector('#color2').value = localStorage.color2;
-            }
-            if (localStorage.coin) {
-                document.querySelector('#coinName input').value = localStorage.coin;
-            }
-
-            document.querySelector('.settings-logo button').addEventListener("click", () => {
-                if (document.querySelector('.settings').style.opacity != 1) {
-                    document.querySelector('.settings').style.opacity = 1;
-                    document.querySelector('.settings').style.display = 'block';
-                }
-                else {
-                    document.querySelector('.settings').style.opacity = 0;
-                    document.querySelector('.settings').style.display = 'none';
-                }
-            })
-
-            document.querySelector('#reset-button').addEventListener("click", () => {
-                localStorage.clear();
-                document.querySelector('.feed').innerHTML = "";
-            })
-
-            document.querySelector('#coinName input').addEventListener('change', (event) => {
-                coinName = event.target.value;
-                localStorage.setItem("coin", coinName);
-                console.log(coinName)
-            });
-
-            /*document.querySelector('#image').addEventListener('change', (event) => {
-                localStorage.setItem("image", event.target.value)
-                console.log(localStorage)
-            });*/
-
-            document.querySelector('#color1').addEventListener('change', (event) => {
-                localStorage.setItem("color1", event.target.value)
-                console.log(localStorage)
-            });
-
-            document.querySelector('#color2').addEventListener('input', (event) => {
-                localStorage.setItem("color2", event.target.value)
-                console.log(localStorage)
-            });
-
-            /*document.querySelector('#padding').addEventListener('input', (event) => {
-                localStorage.setItem("padding", event.target.value)
-                console.log(localStorage)
-            });*/
-        }
-    </script>
+    <script>let donationList=[],coinName="";const socket=new WebSocket("wss://rally-alerts-server.herokuapp.com/rally/alerts/websocket");function isOpen(e){return e.readyState===e.OPEN}function addDonation(e,t,o,n,a){function c(e){return e<10&&(e="0"+e),e}date=new Date,1==o?($(".feed").append(`\n        <div class="item">\n                <div class="tip-info">\n                    <div class="name">${e} <br>\n                        <span class="amount">$${t}</span> \n                    </div>\n                </div>\n                <div class="time">\n                ${date.toDateString().slice(4)}   \n                <br> \n                ${c(date.getHours())} : ${c(date.getMinutes())}\n                </div>\n        </div>    \n        `),donationList.push(`${e};${t};${date.toDateString().slice(4)};${c(date.getHours())} : ${c(date.getMinutes())}`),localStorage.setItem("data",donationList)):$(".feed").append(`\n            <div class="item">\n                    <div class="tip-info">\n                        <div class="name">${e}\n                            <span class="amount">$${t}</span> \n                        </div>\n                    </div>\n                    <div class="time">\n                    ${n}   \n                    <br> \n                    ${a}\n                    </div>\n            </div>    \n            `)}function listeners(){localStorage.color1&&(document.querySelector("#color1").value=localStorage.color1),localStorage.color2&&(document.querySelector("#color2").value=localStorage.color2),localStorage.coin&&(document.querySelector("#coinName input").value=localStorage.coin),document.querySelector(".settings-logo button").addEventListener("click",()=>{1!=document.querySelector(".settings").style.opacity?(document.querySelector(".settings").style.opacity=1,document.querySelector(".settings").style.display="block"):(document.querySelector(".settings").style.opacity=0,document.querySelector(".settings").style.display="none")}),document.querySelector("#reset-button").addEventListener("click",()=>{localStorage.clear(),document.querySelector(".feed").innerHTML="",location.reload()}),document.querySelector("#coinName input").addEventListener("change",e=>{coinName=e.target.value,localStorage.setItem("coin",coinName),console.log(coinName)}),document.querySelector("#color1").addEventListener("change",e=>{localStorage.setItem("color1",e.target.value),console.log(localStorage)}),document.querySelector("#color2").addEventListener("input",e=>{localStorage.setItem("color2",e.target.value),console.log(localStorage)})}socket.onopen=function(e){},setInterval(function(){isOpen(socket)?socket.send("Keep Alive"):(location.reload(),new WebSocket("wss://rally-alerts-server.herokuapp.com/rally/alerts/websocket"))},5e3),socket.addEventListener("message",e=>{if(socket.send("Received!"),"{"!==e.data.slice(0,1));else if(JSON.parse(e.data).coinKind==coinName){let t=JSON.parse(e.data);t.data.costInUSCents=t.data.costInUSCents/100,t.data.costInUSCents>=1?addDonation(t.data.fromUsername,Math.trunc(t.data.costInUSCents),!0,0,0):addDonation(t.data.fromUsername,String(t.data.costInUSCents).slice(0,4),!0,0,0)}}),window.addEventListener("load",()=>{if(listeners(),coinName=document.querySelector("#coinName input").value,localStorage.length>0)for(item in donationList=localStorage.data.split(",")){let e=donationList[item].split(";");addDonation(e[0],e[1],!1,e[2],e[3])}});</script>
 </head>
 
 <body>
