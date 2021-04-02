@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rally Activity Feed</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #333;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            min-width: 285px !important;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+            width: 0px;
+        }
+
+        .container {
+            width: 100%;
+            min-width: 285px;
+            height: max-content;
+            background-color: #333;
+            font-weight: 800;
+            display: inline-block
+        }
+
+        .label {
+            width: 100%;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-transform: uppercase;
+            color: #000;
+            background-color: #fefefe;
+            text-align: center;
+            font-size: 20px;
+            pointer-events: none;
+        }
+
+        .label p {
+            letter-spacing: 1px;
+        }
+
+        button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            pointer-events: auto;
+            border: 0px solid rgba(0, 0, 0, 0);
+            padding: 0;
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
+
+        i {
+            font-size: 20px;
+        }
+
+        .settings-logo {
+            pointer-events: auto;
+        }
+
+        .feed {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            flex-direction: column-reverse;
+            padding-top: 5px;
+        }
+
+        .item {
+            width: 100%;
+            min-height: 50px;
+            position: relative;
+            background-color: #000;
+            margin-bottom: 5px;
+            border-right: 5px solid #fff;
+            padding: 5px;
+            display: inline-block
+        }
+
+        .tip-info {
+            padding-left: 5px;
+            display: flex;
+        }
+
+        .name {
+            color: #fefefe;
+            width: 60%;
+            word-wrap: break-word;
+            padding-right: 20px !important;
+        }
+
+        .amount {
+            color: #07d600;
+        }
+
+        .time {
+            padding-right: 2px;
+            color: rgb(206, 206, 206);
+            text-align: right;
+            width: max-content;
+            position: absolute;
+            top: 5px;
+            right: 5px;
+        }
+
+        .settings {
+            position: absolute;
+            left: 0;
+            top: 30px;
+            width: 100%;
+            height: max-content;
+            background-color: #333;
+            z-index: 999;
+            color: #fafafa;
+            padding: 10px;
+            opacity: 0;
+            display: none;
+        }
+
+        .settings h3 {
+            color: #fff;
+            padding-bottom: 8px;
+        }
+
+        .settings-flex {
+            width: 100%;
+            height: 100vh;
+            background-color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            flex-direction: column !important;
+        }
+
+        .settings-item {
+            width: 100%;
+            margin-bottom: 5px;
+            background-color: #fff;
+            color: #333;
+            padding: 5px;
+            display: flex;
+            font-size: 15px;
+            box-sizing: border-box;
+            border-bottom: 5px solid rgb(0, 0, 0);
+        }
+
+        #coinName {
+            height: 55px;
+            top: 100px;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #coinName input {
+            height: max-content !important;
+            margin-left: 5px;
+            margin-right: 5px;
+            margin-top: -18px;
+            width: 100%;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            padding-left: 5px;
+            padding-right: 5px;
+            text-align: center;
+        }
+
+        .settings-item:nth-child(2){
+            display:flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #reset {
+            color: #333;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #reset button {
+            position: relative;
+            width: 50%;
+            max-width: 200px;
+            height: 30px;
+            margin-top: -10px;
+            color: #fefefe;
+            background-color: red;
+            border-radius: 20px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        #submit {
+            height: 50px;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #submit button {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 15px;
+            position: relative;
+            width: 50%;
+            max-width: 200px;
+            height: 30px;
+            color: #fafafa;
+            background-color: red;
+            border-radius: 20px;
+            margin-top: -10px;
+        }
+
+    </style>
+    <script>let donationList=[],coinName="";const socket=new WebSocket("wss://rally-alerts-server.herokuapp.com/rally/alerts/websocket");function isOpen(e){return e.readyState===e.OPEN}function addDonation(e,t,o,n,a){function c(e){return e<10&&(e="0"+e),e}date=new Date,1==o?($(".feed").append(`\n        <div class="item">\n                <div class="tip-info">\n                    <div class="name">${e} <br>\n                        <span class="amount">$${t}</span> \n                    </div>\n                </div>\n                <div class="time">\n                ${date.toDateString().slice(4)}   \n                <br> \n                ${c(date.getHours())} : ${c(date.getMinutes())}\n                </div>\n        </div>    \n        `),donationList.push(`${e};${t};${date.toDateString().slice(4)};${c(date.getHours())} : ${c(date.getMinutes())}`),localStorage.setItem("data",donationList)):$(".feed").append(`\n            <div class="item">\n                    <div class="tip-info">\n                        <div class="name">${e}\n                            <span class="amount">$${t}</span> \n                        </div>\n                    </div>\n                    <div class="time">\n                    ${n}   \n                    <br> \n                    ${a}\n                    </div>\n            </div>    \n            `)}function listeners(){localStorage.color1&&(document.querySelector("#color1").value=localStorage.color1),localStorage.color2&&(document.querySelector("#color2").value=localStorage.color2),localStorage.coin&&(document.querySelector("#coinName input").value=localStorage.coin),document.querySelector(".settings-logo button").addEventListener("click",()=>{1!=document.querySelector(".settings").style.opacity?(document.querySelector(".settings").style.opacity=1,document.querySelector(".settings").style.display="block"):(document.querySelector(".settings").style.opacity=0,document.querySelector(".settings").style.display="none")}),document.querySelector("#reset-button").addEventListener("click",()=>{localStorage.clear(),document.querySelector(".feed").innerHTML="",location.reload()}),document.querySelector("#coinName input").addEventListener("change",e=>{coinName=e.target.value,localStorage.setItem("coin",coinName),console.log(coinName)}),document.querySelector("#color1").addEventListener("change",e=>{localStorage.setItem("color1",e.target.value),console.log(localStorage)}),document.querySelector("#color2").addEventListener("input",e=>{localStorage.setItem("color2",e.target.value),console.log(localStorage)})}socket.onopen=function(e){},setInterval(function(){isOpen(socket)?socket.send("Keep Alive"):(location.reload(),new WebSocket("wss://rally-alerts-server.herokuapp.com/rally/alerts/websocket"))},5e3),socket.addEventListener("message",e=>{if(socket.send("Received!"),"{"!==e.data.slice(0,1));else if(JSON.parse(e.data).coinKind==coinName){let t=JSON.parse(e.data);t.data.costInUSCents=t.data.costInUSCents/100,t.data.costInUSCents>=1?addDonation(t.data.fromUsername,Math.trunc(t.data.costInUSCents),!0,0,0):addDonation(t.data.fromUsername,String(t.data.costInUSCents).slice(0,4),!0,0,0)}}),window.addEventListener("load",()=>{if(listeners(),coinName=document.querySelector("#coinName input").value,localStorage.length>0)for(item in donationList=localStorage.data.split(",")){let e=donationList[item].split(";");addDonation(e[0],e[1],!1,e[2],e[3])}});</script>
+</head>
+
+<body>
+    <div
+        class="container">
+        <div
+            class="label">
+            <p>ACTIVITY
+                FEED
+            </p>
+            <div
+                class="settings-logo">
+                <button
+                    onclick="">
+                    <i
+                        class="fas fa-cog"></i>
+                </button>
+            </div>
+        </div>
+        <div
+            class="feed">
+        </div>
+    </div>
+    </div>
+    <div
+        class="settings">
+        <h3>Settings
+            &#8594;
+        </h3>
+        <div
+            class="settings-flex">
+            <div class="settings-item"
+                id="coinName">
+                <p>COIN
+                    SYMBOL
+                    <span>&#8594;</span>
+                </p>
+                <br><input
+                    value="SKOT">
+            </div>
+            <div class="settings-item"
+                id="reset">
+                <button
+                    id="reset-button">RESET</button>
+            </div>
+            <h3 class="settings-item"
+                style="border: 0px solid; background-color: rgba(0,0,0,0); font-size: 20px; margin-top:10px">
+                Alert
+                Settings
+                <span
+                    style="padding-left: 5px">
+                    &#8594;</span>
+            </h3>
+
+            <div
+                class="settings-item">
+                Username
+                Color<span
+                    style="padding-left: 5px">
+                    &#8594;</span>
+                <input
+                    id="color1"
+                    style="padding: 0 5px 0 5px; margin-left: 5px; height: 20px; width: 20%;margin-right: 5px; line-height: 10px;"
+                    type="text"
+                    value="#FFA500">
+            </div>
+            <div
+                class="settings-item">
+                Message
+                Color
+                <span
+                    style="padding-left: 5px">
+                    &#8594;</span>
+                <input
+                    id="color2"
+                    style="padding: 0 5px 0 5px; margin-left: 5px; height: 20px; width: 20%;margin-right: 5px; line-height: 10px;"
+                    type="text"
+                    value="#ffffff">
+            </div>
+            <div class="settings-item"
+                id='submit'>
+                <button>SUBMIT</button>
+            </div>
+        </div>
+
+    </div>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.min.js"
+        integrity="sha512-B4skI5FiLurS86aioJx9VfozI1wjqrn6aTdJH+YQUmCZum/ZibPBTX55k5d9XM6EsKePDInkLVrN7vPmJxc1qA=="
+        crossorigin="anonymous"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" />
+</body>
+
+</html>
